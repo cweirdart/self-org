@@ -1,3 +1,17 @@
+---
+title: Systems Guide Chatbot
+emoji: 🤖
+colorFrom: blue
+colorTo: green
+sdk: python
+sdk_version: "3.11"
+app_file: chatbot.py
+pinned: false
+---
+
+# Systems Guide Chatbot
+
+A command-line chatbot interface powered by OpenAI.
 # self-org
 
 This repository contains a simple command-line chatbot interface.
