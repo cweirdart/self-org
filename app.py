@@ -1,51 +1,45 @@
-import os
+import gradio as gr
 import openai
+import os
 
-PROMPT_FILE = 'system_prompt.txt'
-CONTRACT_FILE = 'behavior_contract.txt'
+# Load the OpenAI API key from environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
+# Load the system prompt from file
+with open("system_prompt.txt") as f:
+    system_prompt = f.read()
 
-def load_prompt(path: str) -> str:
-    """Load text from a file, returning an empty string if not found."""
-    try:
-        with open(path, 'r', encoding='utf-8') as f:
-            return f.read()
-    except FileNotFoundError:
-        return ""
+# Load behavior contract (optional, if you want to include it)
+with open("behavior_contract.txt") as f:
+    behavior_contract = f.read()
 
+# Combine prompts if desired (customizable)
+combined_prompt = f"{system_prompt}\n\n{behavior_contract}"
 
-def main() -> None:
-    api_key = os.environ.get('OPENAI_API_KEY')
-    if not api_key:
-        print('Error: OPENAI_API_KEY environment variable not set.')
-        return
+# Chatbot response logic
+def chatbot_response(message, history):
+    messages = [{"role": "system", "content": combined_prompt}]
+    for user_msg, bot_msg in history:
+        messages.append({"role": "user", "content": user_msg})
+        messages.append({"role": "assistant", "content": bot_msg})
 
-    openai.api_key = api_key
-    prompt = load_prompt(PROMPT_FILE)
-    contract = load_prompt(CONTRACT_FILE)
-    system_message = f"{contract}\n\n{prompt}" if contract or prompt else "You are a helpful assistant."
+    messages.append({"role": "user", "content": message})
 
-    print("Type 'quit' or 'exit' to stop.")
-    while True:
-        try:
-            user_input = input('You: ')
-        except EOFError:
-            break
-        if user_input.strip().lower() in {'quit', 'exit'}:
-            break
-        try:
-            response = openai.ChatCompletion.create(
-                model='gpt-3.5-turbo',
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_input},
-                ],
-            )
-            message = response.choices[0].message["content"].strip()
-            print(f'Bot: {message}')
-        except Exception as e:
-            print(f'Error: {e}')
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=messages,
+    )
 
+    return response.choices[0].message.content.strip()
 
-if __name__ == '__main__':
-    main()
+# Create Gradio interface clearly
+iface = gr.ChatInterface(
+    fn=chatbot_response,
+    title="Systems Guide",
+    retry_btn=None,
+    undo_btn=None,
+    clear_btn="Clear",
+)
+
+# Launch Gradio clearly
+iface.launch(server_name="0.0.0.0", server_port=7860)
