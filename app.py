@@ -4,13 +4,20 @@ import os
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Load system prompt
 with open("system_prompt.txt") as f:
     system_prompt = f.read()
 
+# Load behavior contract
 with open("behavior_contract.txt") as f:
     behavior_contract = f.read()
 
-combined_prompt = f"{system_prompt}\n\n{behavior_contract}"
+# Load governance design layer explicitly
+with open("governance_design.txt") as f:
+    governance_design = f.read()
+
+# Explicitly combine all prompts
+combined_prompt = f"{system_prompt}\n\n{behavior_contract}\n\n{governance_design}"
 
 def chatbot_response(message, history):
     messages = [{"role": "system", "content": combined_prompt}]
